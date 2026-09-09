@@ -26,6 +26,8 @@ Course materials for **Geophys 5432**, including Python lab notebooks and homewo
 
 ## Getting started
 
+[Link to Demos](https://maurer-gemlab.github.io/Potential_Field_Theory/demos/)
+
 ### Prerequisites
 
 - Python 3.10+ with `numpy`, `scipy`, `matplotlib` (and optionally `pyshtools` for M4)
