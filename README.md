@@ -9,6 +9,8 @@ Course materials for **Geophys 5432**, including Python lab notebooks and homewo
 | `labs/M*/` | Jupyter lab notebooks (one per module) |
 | `homeworks/M*/` | Homework assignments in Quarto (`.qmd`) and compiled PDF |
 | `Geophys5432_Course_Outline.qmd` | Week-by-week course outline source |
+| `demos/` | Interactive browser demos ([live site](https://maurer-gemlab.github.io/Potential_Field_Theory/demos/)) and Jupyter demo notebooks |
+| `demos/data/` | Small example datasets used by the demo notebooks (see `demos/data/README.md`) |
 
 ## Modules
 
@@ -30,7 +32,7 @@ Course materials for **Geophys 5432**, including Python lab notebooks and homewo
 
 ### Prerequisites
 
-- Python 3.10+ with `numpy`, `scipy`, `matplotlib` (and optionally `pyshtools` for M4)
+- Python 3.10+ with `numpy`, `scipy`, `matplotlib`, `pandas` (and optionally `pyshtools` for M4)
 - [Quarto](https://quarto.org/) to render `.qmd` homework files
 
 ### Set up a Python environment
@@ -38,7 +40,7 @@ Course materials for **Geophys 5432**, including Python lab notebooks and homewo
 ```bash
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install numpy scipy matplotlib jupyter pyshtools
+pip install numpy scipy matplotlib pandas jupyter pyshtools
 ```
 
 ### Run a lab notebook
@@ -46,6 +48,16 @@ pip install numpy scipy matplotlib jupyter pyshtools
 ```bash
 jupyter notebook labs/M0/lab0.ipynb
 ```
+
+### Run a demo notebook
+
+```bash
+jupyter notebook demos/euler_deconvolution_demo.ipynb
+```
+
+`euler_deconvolution_demo.ipynb` (M5) covers Euler deconvolution for depth to
+magnetic sources. It applies the method to USGS Earth MRI airborne magnetic data
+from the Viburnum Trend, southeast Missouri.
 
 ### Render a homework PDF
 
