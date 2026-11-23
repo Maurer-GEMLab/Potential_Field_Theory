@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MCMC on a two-minimum misfit</title>
+<link href="vendor/fonts.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f4; --panel:#ffffff; --ink:#172033; --muted:#5d6779; --grid:#dfe4ea; --border:#cfd6df;
+  --curve:#172033; --terrain:rgba(23,32,51,0.06); --hist:#3d6fa8; --pdf:#c98a1b;
+  --accept:#128a76; --reject:#c4314b; --burn:#aab3c0; --prop:rgba(61,111,168,0.16); --walker:#3d6fa8;
+  --btn:#172033; --btn-ink:#ffffff;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111827; --panel:#1a2334; --ink:#e7ecf3; --muted:#9aa6b8; --grid:#2a3548; --border:#2f3b50;
+    --curve:#e7ecf3; --terrain:rgba(231,236,243,0.06); --hist:#6f9fd8; --pdf:#e7ac3c;
+    --accept:#33c1a5; --reject:#ef5e78; --burn:#56627a; --prop:rgba(111,159,216,0.20); --walker:#8fb7e8;
+    --btn:#e7ecf3; --btn-ink:#111827;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111827; --panel:#1a2334; --ink:#e7ecf3; --muted:#9aa6b8; --grid:#2a3548; --border:#2f3b50;
+  --curve:#e7ecf3; --terrain:rgba(231,236,243,0.06); --hist:#6f9fd8; --pdf:#e7ac3c;
+  --accept:#33c1a5; --reject:#ef5e78; --burn:#56627a; --prop:rgba(111,159,216,0.20); --walker:#8fb7e8;
+  --btn:#e7ecf3; --btn-ink:#111827;
+  color-scheme: dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%; scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  height:100%; margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Space Grotesk", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size:15px; line-height:1.4;
+}
+.app{height:100%; display:flex; flex-direction:column; padding:14px 18px 16px; gap:10px; max-width:1800px; margin:0 auto}
+header{display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:6px 28px}
+h1{margin:0; font-size:1.55rem; font-weight:700; letter-spacing:-0.01em}
+.model{color:var(--muted); font-size:0.98rem}
+.model b{color:var(--ink); font-weight:700}
+.controls{display:flex; flex-wrap:wrap; align-items:center; gap:10px 22px; padding:10px 14px; background:var(--panel); border:1px solid var(--border); border-radius:10px}
+.btns{display:flex; gap:8px}
+button{
+  font:inherit; font-weight:700; padding:7px 14px; border-radius:7px; cursor:pointer;
+  border:1.5px solid var(--btn); background:transparent; color:var(--ink);
+}
+button.primary{background:var(--btn); color:var(--btn-ink); min-width:5.5em}
+button:focus-visible, input:focus-visible{outline:3px solid var(--hist); outline-offset:2px}
+label.ctl{display:flex; align-items:center; gap:8px; white-space:nowrap}
+label.ctl span.v{display:inline-block; min-width:4.2em; font-variant-numeric:tabular-nums; font-weight:700}
+input[type=range]{width:120px; accent-color:var(--hist)}
+.stats{margin-left:auto; display:flex; gap:18px; flex-wrap:wrap; font-variant-numeric:tabular-nums}
+.stats div{color:var(--muted)}
+.stats strong{color:var(--ink)}
+.rule{color:var(--muted); font-size:0.95rem}
+.grid{flex:1; min-height:0; display:grid; grid-template-columns:1.15fr 1fr; grid-template-rows:1fr 1fr; gap:10px}
+.card{background:var(--panel); border:1px solid var(--border); border-radius:10px; display:flex; flex-direction:column; min-height:0; padding:8px 10px 4px}
+.card h2{margin:0 0 2px 4px; font-size:1.02rem; font-weight:700}
+.card h2 small{font-weight:400; color:var(--muted); font-size:0.9rem; margin-left:6px}
+.plot{position:relative; flex:1; min-height:0}
+.plot canvas{position:absolute; inset:0; width:100%; height:100%; display:block}
+.plot.clickable canvas{cursor:crosshair}
+.foot{color:var(--muted); font-size:0.85rem}
+kbd{font-family:inherit; font-size:0.8rem; border:1px solid var(--border); border-bottom-width:2px; border-radius:4px; padding:0 5px}
+@media (max-width:860px){
+  html,body{height:auto}
+  .app{height:auto}
+  .grid{grid-template-columns:1fr; grid-template-rows:none}
+  .card{height:300px}
+  .stats{margin-left:0}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Markov chain Monte Carlo on a misfit with two minima</h1>
+    <div class="model">Forward model <b>d = g(m) = m²</b>, observed d = 4 ± 1.5, prior m ~ 𝒩(0.8, 2.5²) → two solutions near m ≈ ±2</div>
+  </header>
+
+  <div class="controls">
+    <div class="btns">
+      <button id="play" class="primary">Run</button>
+      <button id="stepBtn">Step</button>
+      <button id="reset">Reset</button>
+    </div>
+    <label class="ctl">Step size σ <input id="sigma" type="range" min="0.05" max="3" step="0.05" value="1"><span class="v" id="sigmaV">1.00</span></label>
+    <label class="ctl">Speed <input id="speed" type="range" min="0" max="11" step="1" value="4"><span class="v" id="speedV"></span></label>
+    <label class="ctl">Burn-in <input id="burn" type="range" min="0" max="5000" step="100" value="0"><span class="v" id="burnV">0</span></label>
+    <div class="stats">
+      <div>Iterations <strong id="sIter">0</strong></div>
+      <div>Accepted <strong id="sAcc">–</strong></div>
+      <div>P(m &gt; 0): chain <strong id="sPpos">–</strong> / true <strong id="sTrue">–</strong></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Misfit landscape <small>click to restart the walker from that point</small></h2>
+      <div class="plot clickable"><canvas id="land"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Chain trace <small>m at each iteration</small></h2>
+      <div class="plot"><canvas id="trace"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Posterior PDF <small>histogram of samples vs. true p(m | d)</small></h2>
+      <div class="plot"><canvas id="hist"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Log-likelihood trace <small>ln L(m) − ln L<sub>max</sub> = −(Φ − Φ<sub>min</sub>)</small></h2>
+      <div class="plot"><canvas id="ll"></canvas></div>
+    </div>
+  </div>
+
+  <div class="rule">Metropolis rule: propose m′ = m + 𝒩(0, σ²); accept with α = min[1, L(m′)/L(m)] = min[1, e<sup>−(Φ(m′) − Φ(m))</sup>]; otherwise repeat m. &nbsp; <span class="foot"><kbd>Space</kbd> run/pause &nbsp;<kbd>S</kbd> step &nbsp;<kbd>R</kbd> reset</span></div>
+</div>
+
+<script>
+(function(){
+  // ---------- Problem definition ----------
+  const XMIN = -4, XMAX = 4;
+  const DOBS = 4, SIGD = 1.5, PMU = 0.8, PSIG = 2.5;
+  const g = m => m * m;
+  const phiRaw = m => { const r = (g(m) - DOBS) / SIGD, p = (m - PMU) / PSIG; return 0.5 * r * r + 0.5 * p * p; };
+
+  const NG = 1201, gridM = new Float64Array(NG), gridPhi = new Float64Array(NG);
+  let PHIMIN = Infinity;
+  for (let i = 0; i < NG; i++) { gridM[i] = XMIN + (XMAX - XMIN) * i / (NG - 1); gridPhi[i] = phiRaw(gridM[i]); if (gridPhi[i] < PHIMIN) PHIMIN = gridPhi[i]; }
+  const phi = m => phiRaw(m) - PHIMIN;           // misfit relative to its minimum
+  const gridPdf = new Float64Array(NG);
+  let Z = 0, Zpos = 0; const dm = (XMAX - XMIN) / (NG - 1);
+  for (let i = 0; i < NG; i++) { gridPdf[i] = Math.exp(-(gridPhi[i] - PHIMIN)); }
+  for (let i = 0; i < NG - 1; i++) { const a = 0.5 * (gridPdf[i] + gridPdf[i + 1]) * dm; Z += a; if (gridM[i] >= 0) Zpos += a; }
+  let PDFMAX = 0;
+  for (let i = 0; i < NG; i++) { gridPdf[i] /= Z; if (gridPdf[i] > PDFMAX) PDFMAX = gridPdf[i]; }
+  const TRUE_PPOS = Zpos / Z;
+
+  // ---------- Chain state ----------
+  const MAXIT = 200000;
+  const chain = new Float32Array(MAXIT + 1), llog = new Float32Array(MAXIT + 1);
+  const NB = 80, counts = new Float64Array(NB), BW = (XMAX - XMIN) / NB;
+  let n = 0, m0 = -3.2, m, phiCur, nAcc = 0, nHist = 0, nPos = 0, burn = 0, minLL = -1;
+  let last = null, running = false, accum = 0;
+  const speeds = [0.025, 0.05, 0.1, 0.25, 0.5, 1, 2, 5, 15, 40, 100, 300]; // steps per frame
+  let speed = speeds[4];
+  let sigma = 1.0;
+
+  function randn(){ let u = 0, v = 0; while (u === 0) u = Math.random(); while (v === 0) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+
+  function addHist(x){ nHist++; if (x > 0) nPos++; const b = Math.floor((x - XMIN) / BW); if (b >= 0 && b < NB) counts[b]++; }
+  function rebuildHist(){ counts.fill(0); nHist = 0; nPos = 0; for (let i = burn; i <= n; i++) addHist(chain[i]); }
+
+  function reset(start){
+    if (start !== undefined) m0 = start;
+    m = m0; phiCur = phi(m); n = 0; nAcc = 0; last = null; accum = 0;
+    chain[0] = m; llog[0] = -phiCur; minLL = Math.min(-1, -phiCur);
+    rebuildHist(); draw();
+  }
+
+  function step(){
+    if (n >= MAXIT) { setRunning(false); return; }
+    const from = m, mp = m + sigma * randn(), php = phi(mp);
+    const alpha = Math.exp(Math.min(0, phiCur - php));
+    const acc = Math.random() < alpha;
+    if (acc) { m = mp; phiCur = php; nAcc++; }
+    n++; chain[n] = m; llog[n] = -phiCur; if (-phiCur < minLL) minLL = -phiCur;
+    if (n >= burn) addHist(m);
+    last = { from, to: mp, acc, alpha, n };
+  }
+
+  // ---------- Canvas plumbing ----------
+  const panels = {};
+  ['land', 'trace', 'hist', 'll'].forEach(id => { const c = document.getElementById(id); panels[id] = { c, ctx: c.getContext('2d'), w: 0, h: 0 }; });
+  let C = {};
+  function readColors(){ const s = getComputedStyle(document.documentElement); ['ink','muted','grid','curve','terrain','hist','pdf','accept','reject','burn','prop','walker','panel'].forEach(k => C[k] = s.getPropertyValue('--' + k).trim()); }
+  function resize(){
+    const dpr = window.devicePixelRatio || 1;
+    for (const k in panels) {
+      const p = panels[k], w = p.c.clientWidth, h = p.c.clientHeight;
+      p.w = w; p.h = h; p.c.width = Math.max(1, Math.round(w * dpr)); p.c.height = Math.max(1, Math.round(h * dpr));
+      p.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    draw();
+  }
+  const FONT = '"Space Grotesk", "Segoe UI", system-ui, sans-serif';
+
+  function niceTicks(a, b, target){
+    const span = b - a, raw = span / target, mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag;
+    const st = (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * mag, out = [];
+    for (let v = Math.ceil(a / st - 1e-9) * st; v <= b + 1e-9; v += st) out.push(Math.abs(v) < 1e-12 ? 0 : v);
+    return { ticks: out, step: st };
+  }
+  function fmt(v, st){
+    if (Math.abs(v) >= 1000) return (v / 1000).toFixed(v % 1000 === 0 ? 0 : 1) + 'k';
+    const d = st >= 1 ? 0 : Math.min(3, Math.ceil(-Math.log10(st)));
+    return v.toFixed(d).replace('-', '−');
+  }
+
+  function axes(p, xr, yr, xlabel, ylabel){
+    const ctx = p.ctx, L = 58, R = 14, T = 10, B = 40;
+    const box = { x: L, y: T, w: Math.max(10, p.w - L - R), h: Math.max(10, p.h - T - B) };
+    const X = v => box.x + (v - xr[0]) / (xr[1] - xr[0]) * box.w;
+    const Y = v => box.y + box.h - (v - yr[0]) / (yr[1] - yr[0]) * box.h;
+    ctx.clearRect(0, 0, p.w, p.h);
+    ctx.font = '13px ' + FONT; ctx.lineWidth = 1;
+    const xt = niceTicks(xr[0], xr[1], Math.max(3, Math.floor(box.w / 80)));
+    const yt = niceTicks(yr[0], yr[1], Math.max(3, Math.floor(box.h / 45)));
+    ctx.strokeStyle = C.grid; ctx.fillStyle = C.muted;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    xt.ticks.forEach(v => { const x = Math.round(X(v)) + 0.5; ctx.beginPath(); ctx.moveTo(x, box.y); ctx.lineTo(x, box.y + box.h); ctx.stroke(); ctx.fillText(fmt(v, xt.step), x, box.y + box.h + 5); });
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    yt.ticks.forEach(v => { const y = Math.round(Y(v)) + 0.5; ctx.beginPath(); ctx.moveTo(box.x, y); ctx.lineTo(box.x + box.w, y); ctx.stroke(); ctx.fillText(fmt(v, yt.step), box.x - 6, y); });
+    ctx.strokeStyle = C.muted; ctx.strokeRect(box.x + 0.5, box.y + 0.5, box.w, box.h);
+    ctx.fillStyle = C.ink; ctx.font = '14px ' + FONT;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(xlabel, box.x + box.w / 2, p.h - 2);
+    ctx.save(); ctx.translate(14, box.y + box.h / 2); ctx.rotate(-Math.PI / 2); ctx.textBaseline = 'middle'; ctx.fillText(ylabel, 0, 0); ctx.restore();
+    return { box, X, Y };
+  }
+  function clip(ctx, box){ ctx.save(); ctx.beginPath(); ctx.rect(box.x, box.y, box.w, box.h); ctx.clip(); }
+
+  // ---------- Panels ----------
+  const LAND_YMAX = 10;
+  function drawLand(){
+    const p = panels.land, ctx = p.ctx;
+    const ax = axes(p, [XMIN, XMAX], [0, LAND_YMAX], 'model parameter m', 'misfit Φ(m) − Φmin');
+    const { box, X, Y } = ax;
+    clip(ctx, box);
+    // terrain
+    ctx.fillStyle = C.terrain;
+    ctx.beginPath();
+    for (let i = 0; i < NG; i += 2) { const x = X(gridM[i]), y = Y(Math.min(gridPhi[i] - PHIMIN, LAND_YMAX * 1.2)); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.lineTo(X(XMAX), box.y + box.h); ctx.lineTo(X(XMIN), box.y + box.h); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    for (let i = 0; i < NG; i += 2) { const x = X(gridM[i]), y = Y(Math.min(gridPhi[i] - PHIMIN, LAND_YMAX * 1.2)); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.strokeStyle = C.curve; ctx.lineWidth = 2.5; ctx.stroke();
+
+    // proposal distribution q(m′|m)
+    const qh = box.h * 0.22, base = box.y + box.h;
+    ctx.beginPath(); ctx.moveTo(X(m - 4 * sigma), base);
+    for (let k = -40; k <= 40; k++) { const x = m + sigma * k / 10; ctx.lineTo(X(x), base - qh * Math.exp(-0.5 * (k / 10) * (k / 10))); }
+    ctx.lineTo(X(m + 4 * sigma), base); ctx.closePath(); ctx.fillStyle = C.prop; ctx.fill();
+    ctx.fillStyle = C.walker; ctx.font = '13px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillText('proposal q(m′ | m), width σ', Math.min(Math.max(X(m), box.x + 110), box.x + box.w - 110), base - qh - 3);
+
+    // recent positions
+    const kmax = Math.min(n, 60);
+    for (let k = kmax; k >= 1; k--) {
+      const x = chain[n - k];
+      ctx.globalAlpha = 0.5 * (1 - k / (kmax + 1));
+      ctx.fillStyle = C.walker; ctx.beginPath(); ctx.arc(X(x), Y(phi(x)), 4, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // last proposal
+    if (last && last.n === n) {
+      const col = last.acc ? C.accept : C.reject;
+      const x0 = X(last.from), y0 = Y(phi(last.from)), x1 = X(last.to), y1 = Y(Math.min(phi(last.to), LAND_YMAX * 1.1));
+      ctx.setLineDash([5, 4]); ctx.strokeStyle = col; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo((x0 + x1) / 2, Math.min(y0, y1) - 40, x1, y1); ctx.stroke(); ctx.setLineDash([]);
+      ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x1, y1, 7, 0, Math.PI * 2); ctx.stroke();
+      if (!last.acc) { ctx.beginPath(); ctx.moveTo(x1 - 4, y1 - 4); ctx.lineTo(x1 + 4, y1 + 4); ctx.moveTo(x1 + 4, y1 - 4); ctx.lineTo(x1 - 4, y1 + 4); ctx.stroke(); }
+    }
+    // walker
+    ctx.fillStyle = C.walker; ctx.strokeStyle = C.panel; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(X(m), Y(phi(m)), 9, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.restore();
+
+    // decision readout
+    ctx.font = '15px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    if (last && last.n === n) {
+      const txt = `ΔΦ = ${(phi(last.to) - phi(last.from)).toFixed(2).replace('-', '−')}   α = ${last.alpha.toFixed(2)}   ${last.acc ? 'accepted' : 'rejected'}`;
+      ctx.fillStyle = last.acc ? C.accept : C.reject; ctx.fillText(txt, box.x + box.w / 2, box.y + 8);
+    } else {
+      ctx.fillStyle = C.muted; ctx.fillText('Press Run or Step to start the walker', box.x + box.w / 2, box.y + 8);
+    }
+  }
+
+  function series(ctx, ax, arr, i0, i1, color, width){
+    if (i1 < i0) return;
+    const { X, Y } = ax; ctx.strokeStyle = color; ctx.lineWidth = width || 1.3;
+    const px0 = X(i0), px1 = X(i1), ncol = Math.max(1, Math.ceil(px1 - px0)), per = (i1 - i0) / ncol;
+    ctx.beginPath();
+    if (per <= 2) {
+      for (let i = i0; i <= i1; i++) { const x = X(i), y = Y(arr[i]); i === i0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+    } else {
+      for (let c = 0; c < ncol; c++) {
+        const a = Math.max(i0, i0 + Math.floor(c * per) - 1), b = Math.min(i1, i0 + Math.floor((c + 1) * per));
+        let lo = Infinity, hi = -Infinity;
+        for (let i = a; i <= b; i++) { const v = arr[i]; if (v < lo) lo = v; if (v > hi) hi = v; }
+        const x = px0 + c + 0.5; ctx.moveTo(x, Y(hi)); ctx.lineTo(x, Y(lo) + 0.6);
+      }
+    }
+    ctx.stroke();
+  }
+
+  function burnShade(ctx, ax, xmax){
+    if (burn <= 0) return;
+    const { box, X } = ax, xb = Math.min(X(Math.min(burn, xmax)), box.x + box.w);
+    ctx.fillStyle = C.grid; ctx.globalAlpha = 0.55; ctx.fillRect(box.x, box.y, xb - box.x, box.h); ctx.globalAlpha = 1;
+    ctx.fillStyle = C.muted; ctx.font = '13px ' + FONT; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    if (xb - box.x > 60) ctx.fillText('burn-in', box.x + 6, box.y + 6);
+  }
+
+  function drawTrace(){
+    const p = panels.trace, ctx = p.ctx, xmax = Math.max(200, n);
+    const ax = axes(p, [0, xmax], [XMIN, XMAX], 'iteration', 'm');
+    clip(ctx, ax.box);
+    burnShade(ctx, ax, xmax);
+    ctx.strokeStyle = C.muted; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(ax.box.x, ax.Y(0)); ctx.lineTo(ax.box.x + ax.box.w, ax.Y(0)); ctx.stroke(); ctx.setLineDash([]);
+    const b = Math.min(burn, n);
+    if (b > 0) series(ctx, ax, chain, 0, b, C.burn);
+    series(ctx, ax, chain, b, n, C.hist);
+    ctx.restore();
+  }
+
+  function drawLL(){
+    const p = panels.ll, ctx = p.ctx, xmax = Math.max(200, n);
+    const ylo = Math.max(-16, Math.min(-2, minLL * 1.08));
+    const ax = axes(p, [0, xmax], [ylo, 0.5], 'iteration', 'ln L − ln Lmax');
+    clip(ctx, ax.box);
+    burnShade(ctx, ax, xmax);
+    const b = Math.min(burn, n);
+    if (b > 0) series(ctx, ax, llog, 0, b, C.burn);
+    series(ctx, ax, llog, b, n, C.accept);
+    ctx.restore();
+  }
+
+  function drawHist(){
+    const p = panels.hist, ctx = p.ctx;
+    let hmax = 0; const dens = new Float64Array(NB);
+    if (nHist > 0) for (let b = 0; b < NB; b++) { dens[b] = counts[b] / (nHist * BW); if (dens[b] > hmax) hmax = dens[b]; }
+    const ymax = Math.max(PDFMAX * 1.18, hmax * 1.05);
+    const ax = axes(p, [XMIN, XMAX], [0, ymax], 'model parameter m', 'probability density');
+    const { box, X, Y } = ax;
+    clip(ctx, box);
+    ctx.fillStyle = C.hist; ctx.globalAlpha = 0.75;
+    for (let b = 0; b < NB; b++) { if (!dens[b]) continue; const x0 = X(XMIN + b * BW), x1 = X(XMIN + (b + 1) * BW); ctx.fillRect(x0 + 0.5, Y(dens[b]), Math.max(1, x1 - x0 - 1), box.y + box.h - Y(dens[b])); }
+    ctx.globalAlpha = 1;
+    ctx.beginPath();
+    for (let i = 0; i < NG; i += 2) { const x = X(gridM[i]), y = Y(gridPdf[i]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.strokeStyle = C.pdf; ctx.lineWidth = 3; ctx.stroke();
+    ctx.restore();
+    // legend
+    ctx.font = '14px ' + FONT; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    const lx = box.x + 12, ly = box.y + 16;
+    ctx.fillStyle = C.hist; ctx.globalAlpha = 0.75; ctx.fillRect(lx, ly - 6, 18, 12); ctx.globalAlpha = 1;
+    ctx.fillStyle = C.ink; ctx.fillText(`MCMC samples (${nHist.toLocaleString()})`, lx + 26, ly);
+    ctx.strokeStyle = C.pdf; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(lx, ly + 22); ctx.lineTo(lx + 18, ly + 22); ctx.stroke();
+    ctx.fillText('true posterior ∝ e^(−Φ)', lx + 26, ly + 22);
+  }
+
+  // ---------- UI ----------
+  const $ = id => document.getElementById(id);
+  function updateStats(){
+    $('sIter').textContent = n.toLocaleString();
+    $('sAcc').textContent = n ? Math.round(100 * nAcc / n) + '%' : '–';
+    $('sPpos').textContent = nHist ? (nPos / nHist).toFixed(2) : '–';
+    $('sTrue').textContent = TRUE_PPOS.toFixed(2);
+  }
+  function draw(){ readColorsIfNeeded(); drawLand(); drawTrace(); drawHist(); drawLL(); updateStats(); }
+  let colorsDirty = true;
+  function readColorsIfNeeded(){ if (colorsDirty) { readColors(); colorsDirty = false; } }
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { colorsDirty = true; draw(); });
+  new MutationObserver(() => { colorsDirty = true; draw(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  function setRunning(r){ running = r; $('play').textContent = r ? 'Pause' : 'Run'; if (r) requestAnimationFrame(loop); }
+  function loop(){
+    if (!running) return;
+    accum += speed; let did = false;
+    while (accum >= 1) { step(); accum -= 1; did = true; if (!running) break; }
+    if (did) draw();
+    requestAnimationFrame(loop);
+  }
+  function speedLabel(s){ const ps = s * 60; return ps >= 1000 ? (ps / 1000).toFixed(ps >= 10000 ? 0 : 1) + 'k/s' : (ps >= 10 ? Math.round(ps) : ps.toFixed(1)) + '/s'; }
+
+  $('play').onclick = () => setRunning(!running);
+  $('stepBtn').onclick = () => { setRunning(false); step(); draw(); };
+  $('reset').onclick = () => { setRunning(false); reset(); };
+  $('sigma').oninput = e => { sigma = +e.target.value; $('sigmaV').textContent = sigma.toFixed(2); draw(); };
+  $('speed').oninput = e => { speed = speeds[+e.target.value]; $('speedV').textContent = speedLabel(speed); };
+  $('burn').oninput = e => { burn = +e.target.value; $('burnV').textContent = burn.toLocaleString(); rebuildHist(); draw(); };
+  $('speedV').textContent = speedLabel(speed);
+
+  panels.land.c.addEventListener('click', e => {
+    const r = panels.land.c.getBoundingClientRect(), L = 58, R = 14, w = r.width - L - R;
+    const x = XMIN + (e.clientX - r.left - L) / w * (XMAX - XMIN);
+    if (x < XMIN || x > XMAX) return;
+    const wasRunning = running; setRunning(false); reset(+x.toFixed(2)); if (wasRunning) setRunning(true);
+  });
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'BUTTON' || (e.target.tagName === 'INPUT' && e.target.type !== 'range')) return;
+    if (e.code === 'Space') { e.preventDefault(); setRunning(!running); }
+    else if (e.key === 's' || e.key === 'S') { setRunning(false); step(); draw(); }
+    else if (e.key === 'r' || e.key === 'R') { setRunning(false); reset(); }
+  });
+
+  new ResizeObserver(resize).observe(document.querySelector('.grid'));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+  reset();
+  resize();
+})();
+</script>
+</body>
+</html>
