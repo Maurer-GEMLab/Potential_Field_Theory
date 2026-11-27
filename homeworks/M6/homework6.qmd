@@ -1,6 +1,28 @@
+---
+title: "Homework 6: Fourier Methods and Transformations"
+subtitle: "Geophys 5142: Potential Field Theory — Module 6"
+lang: en
+format:
+  html:
+    toc: true
+    number-sections: true
+    math: mathjax
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: true
+    geometry: margin=1in
+    fontsize: 12pt
+    pdf-standard: ["a-4f", "ua-2"]
+---
+
 # Homework 6: Fourier Methods and Transformations
 
 This homework covers material from **Module 6: Fourier Methods, Transformations, and Data Enhancement** and aligns with learning outcomes **LO6, LO8**.
+
+**Note**:
+You are required to write out the solutions to the problems by hand and submit pictures of your work; if desired you can also do the work using Latex or markdown, but **your submission should be hand-written**. 
+Show all steps — in this course the derivation matters as much as the final number.
 
 **Related Resources:**
 - Lectures: M6 lecture notes (Fourier-Domain Modeling, Data Transformations)
@@ -8,44 +30,63 @@ This homework covers material from **Module 6: Fourier Methods, Transformations,
 - Lab 6.5: Continuation Techniques (related to Problem 6.2)
 - Textbook: Blakely Ch. 11, 12
 - Python libraries: NumPy FFT, SciPy signal processing
+- Lectures: M6.5 lecture notes (Continuation Theory, Applications, Stability)
+- Lab: Lab 6.5 (Continuation Techniques) — *Essential for all problems*
+- Lab 6: Fourier Filtering (see Part 2 on upward continuation)
+- Textbook: Blakely Ch. 12 (Transformations)
 
 ## Problems
 
-1. **Problem 6.1** (Blakely Ch. 11, Problem 1) — *Fourier Analysis/Moderate*
+1. **Problem 6.1** (Blakely Ch. 11, Problem 1)
    - Apply the Fourier transform to the potential of a vertical line source. Show how the wavenumber relates to source geometry.
-   - **Cross-reference:** Lab 6, Part 1; M6 lecture notes, Section "Fourier-Domain Modeling"; M0/lecture2_notes.qmd (FFT review)
-   - **Difficulty:** Moderate (Fourier transform mechanics; wavenumber interpretation)
+   - **Cross-reference:** Lab 6, Part 1
    - **Tip:** Use linearity of FT; integrate in k-domain; relate slope to source depth, amplitude to mass/moment
 
-2. **Problem 6.2** (Blakely Ch. 12, Problem 2) — *Continuation/Challenging*
+2. **Problem 6.2** (Blakely Ch. 12, Problem 2) 
    - Derive the upward continuation operator in the wavenumber domain $e^{-|k|h}$. Discuss stability for downward continuation.
    - **Cross-reference:** Lab 6, Part 2; Lab 6.5; M6 lecture notes, Section "Transformations"; M6.5 lecture notes
-   - **Difficulty:** Challenging (separation of variables in Laplace's eq.; operator derivation)
    - **Tip:** Start with Laplace's equation in Fourier domain; solve for spectral expansion; discuss exponential amplification in downward case
 
-3. **Problem 6.3** (Blakely Ch. 12, Problem 4) — *Transformation/Challenging*
+3. **Problem 6.3** (Blakely Ch. 12, Problem 4) 
    - Implement reduction to the pole for a magnetic anomaly with known magnetization direction. Show the filter in wavenumber space.
    - **Cross-reference:** Lab 6, Part 3; M6 lecture notes, Section "Phase Transformations"; M3/lecture notes (magnetization)
-   - **Difficulty:** Challenging (phase rotation; filter design; physical interpretation)
    - **Tip:** Apply analytic signal to estimate inclination/declination; implement RTP filter; verify with synthetic data before applying to real data
 
-4. **Problem 6.4** (Blakely Ch. 12, Problem 6) — *Signal Processing/Moderate*
+4. **Problem 6.4** (Blakely Ch. 12, Problem 6) 
    - Calculate the analytic signal of a magnetic profile using the Hilbert transform. Explain how it enhances source edges.
    - **Cross-reference:** Lab 6, Part 4; M6 lecture notes, Section "Complex Analysis and Analytic Signal"; M0/lecture2_notes.qmd (signal processing)
-   - **Difficulty:** Moderate (Hilbert transform computation; edge detection concept)
    - **Tip:** Use scipy.signal.hilbert or manual FFT implementation; plot amplitude and phase; relate to source geometry
 
-5. **Problem 6.5** (Blakely Ch. 11, Problem 5) — *Spectral Analysis/Challenging*
+5. **Problem 6.5** (Blakely Ch. 11, Problem 5)
    - Interpret the power spectrum of a gravity anomaly. How does the slope relate to source depth and geometry?
    - **Cross-reference:** Lab 6, Part 1; M6 lecture notes, Section "Depth and Shape from Spectra"; M4/homework problem 4.5 (harmonic analysis analogy)
-   - **Difficulty:** Challenging (spectral interpretation; inverse modeling)
    - **Tip:** Compute FFT magnitude; plot log-log spectrum; identify break frequency; relate slope to fractal dimension; estimate equivalent source depth
+
+6. **Problem 6.5.1** (Blakely Ch. 12, Problem 3) 
+   - Derive the upward continuation formula for a potential field. Show the filter function $e^{-|k|h}$ in wavenumber space.
+   - **Cross-reference:** M6.5 lecture notes, Section "Continuation Theory"; Lab 6.5, Part 1
+   - **Tip:** Start from Laplace's equation $\nabla^2 \phi = 0$; transform to k-domain; solve for $\phi(k,h)$; inverse transform to spatial domain
+
+7. **Problem 6.5.2** — *Stability Analysis*
+   - Implement downward continuation and analyze noise amplification. For what wavenumbers is downward continuation unstable? Provide mathematical justification.
+   - **Cross-reference:** Lab 6.5, Part 2; M6.5 lecture notes, Section "Stability Considerations"
+   - **Tip:** Add noise to synthetic data; apply downward continuation at varying depths; show amplification factor $e^{|k|h}$; identify cutoff wavenumber
+
+8. **Problem 6.5.3**
+   - Apply continuation to separate regional and residual gravity anomalies. Demonstrate with a synthetic example.
+   - **Cross-reference:** Lab 6.5, Part 3; M6.5 lecture notes, Section "Practical Applications"; M2/lecture notes (gravity anomalies)
+   - **Tip:** Create synthetic data with deep (regional) and shallow (residual) sources; upward continue to isolate regional; compute residual; compare with original
+
+9. **Problem 6.5.4** 
+   - Evaluate the stability of continuation methods. What factors affect the reliability of downward continuation?
+   - **Cross-reference:** Lab 6.5, Part 2; M6.5 lecture notes, Section "Stability Considerations"; Data quality discussion
+   - **Tip:** Test sensitivity to: (1) data noise level, (2) grid spacing (Nyquist limit), (3) data gaps, (4) continuation distance; provide quantitative recommendations
 
 ## Submission Guidelines
 
-- Submit solutions as a PDF, Quarto document, or **Jupyter notebook** (preferred for computational work)
-- Include complete derivations and mathematical justifications
+- Submit solutions to analytical problems as a single PDF scan of your handwritten work; computational aspects should be shown as PDF exports from your Jupyter notebook.
+- Include derivations, calculations, and explanations with proper units
+- Show all work step-by-step
+- Use vector notation ($\mathbf{B}$, $\nabla$) and SI units consistently
 - **Essential:** Include plots of filters (wavenumber domain), spectra (log-log plots), and before/after transformed data
-- Include Python code or pseudocode for computational problems
 - Discuss physical meaning of results and limitations
-- Expected complexity: 8–12 pages + extensive figures/code
