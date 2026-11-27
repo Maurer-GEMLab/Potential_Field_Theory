@@ -1,3 +1,21 @@
+---
+title: "Homework 2: Newtonian Potential and Gravity Fields"
+subtitle: "Geophys 5142: Potential Field Theory — Module 2"
+lang: en
+format:
+  html:
+    toc: true
+    number-sections: true
+    math: mathjax
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: true
+    geometry: margin=1in
+    fontsize: 12pt
+    pdf-standard: ["a-4f", "ua-2"]
+---
+
 # Homework 2: Newtonian Potential and Gravity Fields
 
 This homework covers material from **Module 2: Newtonian Potential and Gravity Fields** and aligns with learning outcomes **LO2**.
@@ -9,41 +27,34 @@ This homework covers material from **Module 2: Newtonian Potential and Gravity F
 
 ## Problems
 
-1. **Problem 2.1** (Blakely Ch. 3, Problem 1) — *Foundation/Easy*
+1. **Problem 2.1** (Blakely Ch. 3, Problem 1)
    - Derive the gravitational potential and vertical attraction of a point mass. Include the mathematical expressions and units.
-   - **Cross-reference:** Lab 2, Part 1; M0/lecture3_notes.qmd (vector calculus review)
-   - **Difficulty:** Easy (fundamental derivation using Coulomb-Newton analogy)
+   - **Cross-reference:** Lab 2, Part 1
    - **Tip:** Start with Newton's law of universal gravitation; integrate to get potential; differentiate to get field
 
-2. **Problem 2.2** (Blakely Ch. 3, Problem 4) — *Conceptual/Moderate*
-   - Apply Newton's shell theorem to explain why the gravitational field inside a uniform spherical shell is zero. Extend this to the PREM model.
-   - **Cross-reference:** Lab 2, Part 2; M0/lecture3_notes.qmd (coordinate systems)
-   - **Difficulty:** Moderate (proof technique; extension to real Earth models)
+2. **Problem 2.2** (Blakely Ch. 3, Problem 4)
+   - Apply Newton's shell theorem to explain why the gravitational field inside a uniform spherical shell is zero. Explain how this then applies to the PREM model.
+   - **Cross-reference:** Lab 2
    - **Tip:** Use symmetry argument; integrate over shell; relate each shell in PREM to enclosed mass
 
-3. **Problem 2.3** (Blakely Ch. 7, Problem 2) — *Computational/Moderate*
-   - Calculate the free-air, Bouguer, and isostatic corrections for a gravity station at elevation 1000 m above sea level, with Bouguer plate thickness 30 m. Use standard densities (ρ_crust=2670 kg/m³, ρ_water=1000 kg/m³, ρ_mantle=3300 kg/m³).
-   - **Cross-reference:** Lab 2, Part 3 (corrections application); M2 lecture notes
-   - **Difficulty:** Moderate (straightforward calculations; understanding physical meaning)
+3. **Problem 2.3** (Blakely Ch. 7, Problem 2)
+   - Calculate the free-air, Bouguer, and isostatic corrections for a gravity station at elevation 1000 m above sea level, with Bouguer plate thickness 30 m. Use standard densities ($\rho_{\text{crust}}=2670 \, \text{kg/m}^3$, $\rho_{\text{water}}=1000 \, \text{kg/m}^3$, $\rho_{\text{mantle}}=3300 \, \text{kg/m}^3$).
+   - **Cross-reference:** Lab 2, Part 3 (corrections application)
    - **Tip:** Research standard formulas; check units carefully; explain physical significance of each correction
 
-4. **Problem 2.4** (Blakely Ch. 3, Problem 6) — *Analytical/Moderate*
+4. **Problem 2.4** (Blakely Ch. 3, Problem 6) 
    - Compute the gravitational potential of a solid sphere of uniform density $\rho$ and radius $R$. Compare with the point mass approximation for points outside the sphere.
-   - **Cross-reference:** Lab 2, Part 1; M1/lecture1_notes.qmd (spherical coordinates)
-   - **Difficulty:** Moderate (integration in spherical coordinates; asymptotic analysis)
+   - **Cross-reference:** Section on Green's Functions and Laplace's Equation
    - **Tip:** Integrate shell by shell; use shell theorem result; check agreement with point mass for $r \gg R$
 
-5. **Problem 2.5** (Blakely Ch. 3, Problem 8) — *Application/Challenging*
+5. **Problem 2.5** (Blakely Ch. 3, Problem 8)
    - Explain Gauss's law for gravity and derive the expression for excess mass from the gravity anomaly of a buried sphere.
-   - **Cross-reference:** Lab 2, Part 2; M1/lecture2_notes.qmd (Green's identities); Final Project (inverse modeling)
-   - **Difficulty:** Challenging (synthesis of Gauss's law, BVP theory, and geophysical interpretation)
+   - **Cross-reference:** Lab 2, Part 2
    - **Tip:** Start with divergence theorem; relate field to enclosed mass; work backward from anomaly to infer source
 
 ## Submission Guidelines
 
-- Submit solutions as a PDF or Quarto document
+- Submit solutions as a single PDF scan of your handwritten work.
 - Include derivations, calculations, and explanations with proper units
 - Show all work step-by-step
 - Include graphs/sketches where helpful (e.g., gravity vs depth plots)
-- Cite references appropriately
-- Expected length: 4–6 pages
