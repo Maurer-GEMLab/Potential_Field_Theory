@@ -27,21 +27,21 @@ Show all steps — in this course the derivation matters as much as the final nu
 
 **Related Resources:**
 - Lectures: M4 lecture notes (Spherical Harmonics, Legendre Functions)
-- Lab: Lab 4 (Spherical Harmonics) — *Essential for Python implementation of Problems 4.1, 4.2, 4.4*
+- Lab: Lab 4 (Spherical Harmonics) — *Essential for Python implementation of Problems 4.1, 4.2*
 - Textbook: Blakely Ch. 6
 - Python libraries: scipy.special (Legendre functions)
 
 ## Problems
 
 1. **Problem 4.1** 
-   - Compute the integral from -1 to 1 of the following associated Legendre polynomials: $n = 1$ and $m = 3$, and then $n = 3$ and $m = 3$. This demonstrates the orthogonality of the associated Legendre polynomials.
+   - Using $\mu = \cos\theta$, compute $\int_{-1}^{1} P_{n,m}(\mu)\,P_{n',m}(\mu)\,d\mu$ for two cases with the same order $m = 1$: (a) different degrees, $n = 1$ and $n' = 3$; and (b) the same degree, $n = n' = 3$. Together these demonstrate the orthogonality of the associated Legendre polynomials. Check your answer to (b) against Equation 6.13.
    - **Tip:** Refer to Equations 6.12 and 6.13 in the Blakely textbook. 
 
 2. **Problem 4.2** (Blakely Ch. 6, Problem 3) 
    - Complete parts a-c. 
    
 
-5. **Problem 4.3**
+3. **Problem 4.3**
    - Explain how spherical harmonic coefficients relate to the spectral content of geophysical fields. What do low-degree vs high-degree harmonics represent?
 
 
