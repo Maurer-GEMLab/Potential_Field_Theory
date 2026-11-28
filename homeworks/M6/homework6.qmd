@@ -25,15 +25,10 @@ You are required to write out the solutions to the problems by hand and submit p
 Show all steps — in this course the derivation matters as much as the final number.
 
 **Related Resources:**
-- Lectures: M6 lecture notes (Fourier-Domain Modeling, Data Transformations)
-- Lab: Lab 6 (Fourier Filtering and Transformations) — *Essential for computational Problems 6.2, 6.3, 6.4*
-- Lab 6.5: Continuation Techniques (related to Problem 6.2)
+- Lectures: M6 lecture notes (Fourier-Domain Modeling, Data Transformations, Continuation)
+- Lab: Lab 6 (Fourier Methods, Continuation, and Reduction to the Pole) — *Essential for computational Problems 6.2, 6.3, 6.4*
 - Textbook: Blakely Ch. 11, 12
 - Python libraries: NumPy FFT, SciPy signal processing
-- Lectures: M6.5 lecture notes (Continuation Theory, Applications, Stability)
-- Lab: Lab 6.5 (Continuation Techniques) — *Essential for all problems*
-- Lab 6: Fourier Filtering (see Part 2 on upward continuation)
-- Textbook: Blakely Ch. 12 (Transformations)
 
 ## Problems
 
@@ -42,7 +37,7 @@ Show all steps — in this course the derivation matters as much as the final nu
 
 2. **Problem 6.2**  
    - Derive the upward continuation operator in the wavenumber domain $e^{-|k|h}$. Discuss stability for downward continuation. 
-   - **Cross-reference:** Lab 6, Part 2; Lab 6.5; M6 lecture notes, Section "Transformations"; M6.5 lecture notes
+   - **Cross-reference:** Lab 6, Parts 2–3; M6 lecture notes, Sections "Transformations" and "Continuation"
    - **Tip:** -  Start from Laplace's equation $\nabla^2 \phi = 0$; transform to k-domain (i.e., solve for spectral expansion); discuss exponential amplification in downward case
 
 3. **Problem 6.3** (Blakely Ch. 11, Problem 4)

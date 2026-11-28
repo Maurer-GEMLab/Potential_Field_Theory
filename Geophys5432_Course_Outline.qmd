@@ -17,7 +17,7 @@ format:
 
 # Course Overview {.unnumbered}
 
-This course provides a rigorous introduction to potential field theory with applications to gravity, magnetic, and electromagnetic methods in geophysics. The course is organized into **9 modules**: an introductory module covering prerequisites and mathematical foundations, 7 content modules progressing from theory to applied methods (including the focused M6.5 continuation methods module), and a capstone final project module.
+This course provides a rigorous introduction to potential field theory with applications to gravity, magnetic, and electromagnetic methods in geophysics. The course is organized into **8 modules**: an introductory module covering prerequisites and mathematical foundations, 6 content modules progressing from theory to applied methods, and a capstone final project module.
 
 ## Course Structure {.unnumbered}
 
@@ -32,7 +32,6 @@ The course is designed to be taught in either an **8-week accelerated format** o
 | M4 | Spherical Harmonic Analysis | Week 5 | Weeks 9–10 |
 | M5 | Forward and Inverse Modeling | Week 6 | Weeks 11–12 |
 | M6 | Fourier Methods, Transformations, and Data Enhancement | Week 7 | Weeks 13–14 |
-| M6.5 | Upward and Downward Continuation Methods | Week 7 (continued) | Weeks 14–15 |
 | M7 | Final Project: Integrated Potential Field Interpretation | Week 8 | Weeks 15–16 |
 
 : Module schedule for 8-week and 16-week formats {#tbl-schedule}
@@ -66,8 +65,8 @@ Upon successful completion of this course, students will be able to:
 
 | Component | Weight |
 |:----------|:------:|
-| Homework problem sets (7 sets) | 25% |
-| Coding labs (8 labs, including Lab 0 and Lab 6.5) | 35% |
+| Homework problem sets (6 sets) | 25% |
+| Coding labs (7 labs, Lab 0–Lab 6) | 35% |
 | Final project (report + notebook + presentation) | 30% |
 | Participation and self-assessment reflections | 10% |
 
@@ -491,7 +490,7 @@ Selected problems from Blakely Ch. 9 and Ch. 10 problem sets; forward-model a ge
 
 ## Module Overview
 
-The final content module brings the tools of Fourier analysis to potential field interpretation. Students learn how gravity and magnetic anomalies behave in the wavenumber domain, how "earth filters" relate source distributions to observed fields, and how transformations—upward continuation, reduction to the pole, pseudogravity, analytic signal, and horizontal gradients—can enhance data for geologic interpretation.
+The final content module brings the tools of Fourier analysis to potential field interpretation. Students learn how gravity and magnetic anomalies behave in the wavenumber domain, how "earth filters" relate source distributions to observed fields, and how transformations—upward continuation, reduction to the pole, pseudogravity, analytic signal, and horizontal gradients—can enhance data for geologic interpretation. Continuation receives focused treatment: students derive the continuation operator from Laplace's equation, use upward continuation for regional–residual separation, and examine why downward continuation amplifies noise and how it can be stabilized.
 
 ## Module Learning Outcomes
 
@@ -502,6 +501,8 @@ Upon completion of this module, students will be able to:
 - **Use** earth filters to relate source properties to observed anomalies.
 - **Interpret** spectral content to estimate source depth and geometry.
 - **Analyze** the power spectrum of a potential field dataset to estimate source depth and identify dominant wavelength components.
+- **Apply** upward continuation to enhance or suppress shallow sources and to separate regional and residual anomalies.
+- **Evaluate** the stability and noise sensitivity of downward continuation, and justify a regularization or depth-limit strategy that balances enhanced resolution against noise amplification.
 - **Evaluate** the suitability of different enhancement techniques (upward continuation, reduction to the pole, analytic signal, horizontal gradient) for a specific geologic interpretation goal, and justify the chosen processing sequence.
 - **Create** a Fourier-domain processing workflow to isolate a target anomaly from regional background and noise in a real or synthetic dataset.
 
@@ -517,9 +518,15 @@ Upon completion of this module, students will be able to:
 - Topographic and general source models in the wavenumber domain
 - Depth and shape of source from power spectra
 
-### Transformations and data enhancement
+#### Continuation
 
-- Upward and downward continuation
+- Derivation of the continuation operator from Laplace's equation in the wavenumber domain
+- Upward continuation as a stable low-pass filter; regional–residual separation
+- Downward continuation: noise amplification, stability, and regularization (wavenumber cutoff, Wiener-type stabilizers)
+- Data leveling and merging surveys at different elevations
+
+#### Transformations and data enhancement
+
 - Directional derivatives (vertical, horizontal gradients)
 - Phase transformations: reduction to the pole
 - Calculation of vector components from total-field data
@@ -537,69 +544,15 @@ Upon completion of this module, students will be able to:
 
 **Textbook Reading:** Blakely: Ch. 11 (Fourier-Domain Modeling, pp. 258–310) and Ch. 12 (Transformations, pp. 311–358)
 
-**Online Notes:** Website: Introduction to Complex Analysis (Ch. 12), Hilbert Transform (Ch. 13), Implementation of the Hilbert Transform (Ch. 14)
+**Online Notes:** Website: Fourier-Domain Modeling (Ch. 11), Transformations (Ch. 12), Introduction to Complex Analysis (Ch. 12), Hilbert Transform (Ch. 13), Implementation of the Hilbert Transform (Ch. 14)
 
 ## Homework
 
-Selected problems from Blakely Ch. 11 and Ch. 12 problem sets; apply upward continuation and reduction to the pole to a gridded magnetic dataset.
+Selected problems from Blakely Ch. 11 and Ch. 12 problem sets; derive the continuation operator from Laplace's equation and discuss the stability of downward continuation; apply upward continuation and reduction to the pole to a gridded magnetic dataset.
 
 ## Coding Lab
 
-**Lab 6: Fourier Filtering and Transformations** — Apply FFT-based upward continuation, reduction to the pole, and horizontal gradient calculations to gridded magnetic anomaly data; estimate depth to source using spectral methods; compare results with forward model predictions.
-
-
----
-
-
-# Module 6.5: Upward and Downward Continuation Methods
-
-::: {.callout-note appearance="minimal"}
-**8-Week Schedule:** Week 7 (continued) | **16-Week Schedule:** Weeks 14–15
-:::
-
-## Module Overview
-
-Building on Fourier methods, this module focuses specifically on continuation techniques for extrapolating potential field data to different elevations. Students learn the mathematical foundations of upward and downward continuation, their practical applications in data processing, and limitations due to noise amplification in downward continuation.
-
-## Module Learning Outcomes
-
-Upon completion of this module, students will be able to:
-
-- **Explain** the principles of upward and downward continuation in the wavenumber domain.
-- **Implement** continuation algorithms using Fourier transforms.
-- **Apply** continuation to enhance or suppress shallow sources in potential field data.
-- **Evaluate** the stability and noise sensitivity of downward continuation.
-- **Analyze** the effects of downward continuation at varying depths to characterize signal-to-noise behavior and identify the optimal continuation level for a given dataset.
-- **Evaluate** the trade-off between enhanced resolution and noise amplification in downward continuation, and justify a regularization or depth-limit strategy.
-
-## Topics
-
-#### Continuation theory
-
-- Upward continuation: filtering high wavenumbers to extrapolate data upward
-- Downward continuation: amplifying high wavenumbers for downward extrapolation
-- Mathematical derivation using Fourier transforms
-- Stability considerations and noise amplification
-
-#### Practical applications
-
-- Separating regional and residual anomalies
-- Enhancing deep vs. shallow sources
-- Data leveling and merging surveys at different elevations
-
-## Readings and Resources
-
-**Textbook Reading:** Blakely: Ch. 12 (Transformations, pp. 311–358), focusing on continuation sections
-
-**Online Notes:** Website: Fourier-Domain Modeling (Ch. 11), Transformations (Ch. 12)
-
-## Homework
-
-Problems on continuation mathematics and application to synthetic data.
-
-## Coding Lab
-
-**Lab 6.5: Continuation Techniques** — Implement upward and downward continuation on gridded data; explore noise effects in downward continuation; apply to separate regional/residual components.
+**Lab 6: Fourier Methods, Continuation, and Reduction to the Pole** — Compute the 2D amplitude spectrum of gridded magnetic anomaly data and estimate depth to source from the radially averaged power spectrum; apply FFT-based upward continuation for regional–residual separation; implement stabilized (cutoff and Wiener) downward continuation and quantify noise amplification against forward model predictions; design a reduction-to-pole filter and examine its low-latitude instability.
 
 
 ---

@@ -22,8 +22,7 @@ Course materials for **Geophys 5432**, including Python lab notebooks and homewo
 | M3 | Geomagnetism and crustal magnetic anomalies |
 | M4 | Spherical harmonic analysis |
 | M5 | Forward modeling and inversion |
-| M6 | Spectral methods and field transformations |
-| M6.5 | Fourier continuation and phase transforms |
+| M6 | Spectral methods, field transformations, and continuation |
 | M7 | Capstone project — regional geoid analysis |
 
 ## Getting started
